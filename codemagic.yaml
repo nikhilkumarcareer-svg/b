@@ -1,0 +1,96 @@
+workflows:
+  react-native-expo:
+    name: React Native Expo
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      android_signing:
+        - keystore_reference
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.bodmasmath.master
+      vars:
+        EXPO_TOKEN: Encrypted(...) # Add your Expo token
+        # Add other environment variables as needed
+      node: 18.17.0
+      npm: 9
+      xcode: latest
+      cocoapods: default
+      java: 17
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm install
+      - name: Install Expo CLI
+        script: |
+          npm install -g @expo/cli
+      - name: Expo prebuild
+        script: |
+          npx expo prebuild --platform all --clear
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Build Android APK and AAB
+        script: |
+          cd android
+          ./gradlew assembleRelease bundleRelease
+      - name: Build iOS
+        script: |
+          cd ios
+          xcode-project use-profiles
+          xcode-project build-ipa \
+            --workspace "BODMASMathMaster.xcworkspace" \
+            --scheme "BODMASMathMaster"
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+      - android/app/build/outputs/**/*.aab
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - user@example.com # Replace with your email
+        notify:
+          success: true
+          failure: false
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        beta_groups:
+          - group name
+        submit_to_app_store: false
+      google_play:
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+
+  web-build:
+    name: Web Build
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      node: 18.17.0
+      npm: 9
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build web app
+        script: |
+          npx expo export --platform web
+      - name: Deploy to Netlify (optional)
+        script: |
+          # Uncomment and configure if using Netlify
+          # npm install -g netlify-cli
+          # netlify deploy --prod --dir=dist
+    artifacts:
+      - dist/**
+    publishing:
+      email:
+        recipients:
+          - user@example.com # Replace with your email
+        notify:
+          success: true
+          failure: false
