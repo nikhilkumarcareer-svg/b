@@ -12,7 +12,7 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.bodmasmath.master
       vars:
-        EXPO_TOKEN: Encrypted(...) # Add your Expo token
+        EXPO_TOKEN: $EXPO_TOKEN
         # Add other environment variables as needed
       node: 18.17.0
       npm: 9
@@ -51,7 +51,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - user@example.com # Replace with your email
+          - ctf.nikhil@gmail.com # Replace with your email
         notify:
           success: true
           failure: false
@@ -90,7 +90,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - user@example.com # Replace with your email
+          - ctf.nikhil@gmail.com # Replace with your email
         notify:
           success: true
           failure: false
